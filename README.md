@@ -461,3 +461,56 @@ Python 3 (Local) | Idle
 cnn_challenge_lab.ipynb
 Ln 1, Col 1
 Mode: Command
+
+
+
+
+
+
+# Example saving logic in task.py
+model.save('gs://qwiklabs-gcp-03-98d8cabdd48f/aiplatform-custom-training-2023-12-14-10:57:51.457/model/my_model')
+
+
+job = aiplatform.CustomTrainingJob(
+display_name=JOB_NAME,
+requirements=["tensorflow_datasets==4.6.0"],
+# TODO: fill in the remaining arguments for the CustomTrainingJob function.
+script_path="task.py",
+container_uri=TRAIN_IMAGE,
+model_serving_container_image_uri=DEPLOY_IMAGE,
+)
+
+MODEL_DISPLAY_NAME = "kmnist-" + TIMESTAMP
+
+# Start the training
+model = job.run(
+model_display_name=MODEL_DISPLAY_NAME,
+replica_count=1,
+accelerator_count=0,
+# TODO: fill in the remaining arguments to run the custom training job function.
+args=CMDARGS,
+machine_type=TRAIN_COMPUTE,
+)
+
+
+
+DEPLOYED_NAME = "kmnist_deployed-" + TIMESTAMP
+
+TRAFFIC_SPLIT = {"0": 100}
+
+MIN_NODES = 1
+MAX_NODES = 1
+
+endpoint = model.deploy(
+deployed_model_display_name=DEPLOYED_NAME,
+accelerator_type=None,
+accelerator_count=0,
+# TODO: fill in the remaining arguments to deploy the model to an endpoint.
+traffic_split=TRAFFIC_SPLIT,
+machine_type=DEPLOY_COMPUTE,
+min_replica_count=MIN_NODES,
+max_replica_count=MAX_NODES,
+)
+
+
+predictions = endpoint.predict(instances=x_test.tolist())
